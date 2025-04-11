@@ -5,7 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import dataSource from 'database/data-source';
 import { ConfigModule } from '@nestjs/config';
 import { CurrentUserMiddleware } from 'utility/middlewares/current-user.middleware';
-import { UserModule } from './users/user.module';
+import { AuthModule } from './users/auth.module';
+import { CourcesModule } from './cources/cources.module';
+import { ProfilesModule } from './users/profile/profile.module';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { UserModule } from './users/user.module';
         autoLoadEntities: true,
       }),
     }),
-    UserModule,
+    AuthModule,
+    CourcesModule,
+    ProfilesModule
   ],
   controllers: [AppController],
   providers: [AppService],

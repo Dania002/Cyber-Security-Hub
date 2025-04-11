@@ -1,10 +1,8 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
-import { isArray } from "class-validator";
-import { verify } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { UserService } from "src/users/user.service";
 import { UserEntity } from "src/users/entities/user.entity";
-
+import { AuthService } from "src/users/auth.service";
+import * as jwt from 'jsonwebtoken';
 
 declare global {
     namespace Express {
@@ -16,34 +14,29 @@ declare global {
 
 @Injectable()
 export class CurrentUserMiddleware implements NestMiddleware {
-    constructor(private readonly userService: UserService) { }
+    constructor(private readonly authService: AuthService) { }
 
     async use(req: Request, res: Response, next: NextFunction) {
-        const authHeader = req.headers.authorization || req.headers.Authorization;
+        const authHeader = req.headers.authorization;
+        const secretKey = process.env.ACCESS_TOKEN_SECRET_KEY;
 
-        if (!authHeader || isArray(authHeader) || !authHeader.startsWith('Bearer ')) {
-            req.currentUser = null;
+        if (!secretKey) {
+            throw new Error("ACCESS_TOKEN_SECRET_KEY is not defined in environment variables.");
+        }
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return next();
         }
+
+        const token = authHeader.split(' ')[1];
+
         try {
-            const token = authHeader.split(' ')[1];
-
-            if (!process.env.ACCESS_TOKEN_SECRET_KEY) {
-                throw new Error("ACCESS_TOKEN_SECRET_KEY is not defined");
-            }
-
-            const decoded = verify(token, process.env.ACCESS_TOKEN_SECRET_KEY as string) as JwtPayload;
-            
-            if (!decoded.id) {
-                throw new Error("Invalid token payload");
-            }
-
-            const currentUser = await this.userService.findCurrent(Number(decoded.id));
-            req.currentUser = currentUser;
-        } catch (err) {
-            console.error("JWT Verification Error:", err);
-            req.currentUser = null;
+            const payload = jwt.verify(token, secretKey) as any;
+            req.currentUser = await this.authService.findUserByEmail(payload.email);
+        } catch (error) {
+            console.error('JWT Verification Error:', error.message);
         }
+
         next();
     }
 }

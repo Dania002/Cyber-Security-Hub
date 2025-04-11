@@ -4,11 +4,20 @@ export const AuthorizeGuard = (allowedRoles: string[]) => {
     class RolesGuardMixin implements CanActivate {
         canActivate(context: ExecutionContext): boolean {
             const request = context.switchToHttp().getRequest();
-            const result = request?.currentUser?.roles.map((role: string) => allowedRoles.includes(role)).find((val: boolean) => val === true);
-            if (result) return true;
-            throw new UnauthorizedException('Sorry, you are not authorized.')
+            const user = request?.currentUser;
+
+            if (!user) {
+                throw new UnauthorizedException('User not found.');
+            }
+
+            if (!allowedRoles.includes(user.role)) {
+                throw new UnauthorizedException('Sorry, you are not authorized.');
+            }
+
+            return true;
         }
     }
-    const guard = mixin(RolesGuardMixin);
-    return guard;
-}
+
+    return mixin(RolesGuardMixin);
+};
+
