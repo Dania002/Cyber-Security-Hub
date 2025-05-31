@@ -27,14 +27,4 @@ export class MailService {
             html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
         });
     }
-
-    async sendContactThankYouEmail(name: string, email: string) {
-        await this.mailerService.sendMail({
-            to: email,
-            subject: 'Thank You for Contacting Us',
-            text: `Thank you ${name} for contacting us. Our team will respond to you as soon as possible.`,
-            html: `<p>Thank you <strong>${name}</strong> for contacting us. Our team will respond to you as soon as possible.</p>`,
-        });
-    }
-
 }

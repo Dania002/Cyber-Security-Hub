@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CourcesService } from './cources.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CourceEntity } from './entities/cource.entity';
@@ -45,7 +45,7 @@ export class CourcesController {
                 callback(null, true);
             },
             limits: {
-                fileSize: 5 * 1024 * 1024, // 5MB per file
+                fileSize: 5 * 1024 * 1024,
             },
         }),
     )

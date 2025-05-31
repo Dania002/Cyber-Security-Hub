@@ -181,6 +181,4 @@ export class AuthService {
 
         return existingProfile;
     }
-
-
 }
