@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { UserEntity } from '../entities/user.entity';
-import { ForgetPasswordDto } from '../dto/forget-password.dto';
 
 @Injectable()
 export class MailService {
@@ -20,7 +19,7 @@ export class MailService {
 
     async sendResetPasswordEmail(user: UserEntity) {
         const url = `${process.env.FRONTEND_URL}/auth/reset-password?token=${user.verificationToken}`;
-    
+
         await this.mailerService.sendMail({
             to: user.email,
             subject: 'Reset Your Password',
@@ -28,4 +27,14 @@ export class MailService {
             html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
         });
     }
+
+    async sendContactThankYouEmail(name: string, email: string) {
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Thank You for Contacting Us',
+            text: `Thank you ${name} for contacting us. Our team will respond to you as soon as possible.`,
+            html: `<p>Thank you <strong>${name}</strong> for contacting us. Our team will respond to you as soon as possible.</p>`,
+        });
+    }
+
 }

@@ -1,7 +1,9 @@
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 import { Countries } from "utility/common/country.enum";
 import { Roles } from "utility/common/user.roles.enum";
 import { UserProfileEntity } from "./userProfile.entity";
+import { ReviewEntity } from "src/cources/reviews/entities/review.entity";
+import { CourceEntity } from "src/cources/entities/cource.entity";
 
 @Entity('users')
 export class UserEntity {
@@ -44,4 +46,10 @@ export class UserEntity {
 
     @OneToOne(() => UserProfileEntity, (profile) => profile.user)
     profile: UserProfileEntity;
+
+    @OneToMany(() => ReviewEntity, (rev) => rev.user)
+    reviews: ReviewEntity[];
+
+    @OneToMany(() => CourceEntity, (course) => course.user)
+    course: CourceEntity[];
 }

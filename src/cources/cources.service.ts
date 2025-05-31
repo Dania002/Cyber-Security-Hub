@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CourceEntity } from './entities/cource.entity';
 import { DeepPartial, Repository } from 'typeorm';
@@ -18,19 +18,42 @@ export class CourcesService {
             where: { id: currentUser.id },
             relations: ['profile'],
         });
-    
+
         if (!userWithProfile || !userWithProfile.profile) {
             throw new BadRequestException('User does not have a profile.');
         }
-    
+
         const cource = this.courceRepository.create({
             img: addNewCourceDTO.img,
             title: addNewCourceDTO.title,
             description: addNewCourceDTO.description,
             specialest: userWithProfile.profile,
-        } as DeepPartial<CourceEntity> );
-    
+        } as DeepPartial<CourceEntity>);
         return await this.courceRepository.save(cource);
+    }
+
+    async findCourse(id: number) {
+        const course = await this.courceRepository.findOne(
+            {
+                where: { id: id },
+                relations: { user: true }
+            }
+
+        );
+        if (!course) throw new NotFoundException('Course not found');
+        return course;
+    }
+
+    async findCource(id: number) {
+        const course = await this.courceRepository.findOne(
+            {
+                where: { id },
+                relations: ['specialest'],
+            }
+        );
+
+        if (!course) throw new NotFoundException('Course not found');
+        return course;
     }
 }
 

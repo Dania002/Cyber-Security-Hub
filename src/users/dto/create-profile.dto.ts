@@ -9,8 +9,8 @@ export class CreateProfileDto {
     @IsEnum(Levels, { message: "Level must be one of: Bachelor's Degree, Master's Degree, Doctoral Degree, Postdoctoral Studies, Professional Certifications" })
     level: Levels;
 
-    @IsNotEmpty({ message: 'CV can not be empty.' })
-    cv: string;
+    @IsOptional()
+    cv?: string;
 
     @IsOptional({ message: 'Certification is optional.' })
     @IsString({ message: 'Certification should be string.' })

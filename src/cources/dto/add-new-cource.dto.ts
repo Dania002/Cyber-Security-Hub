@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class AddNewCourceDTO {
 
@@ -11,6 +11,7 @@ export class AddNewCourceDTO {
     description: String;
 
     @IsOptional()
-    @IsString()
-    img: string;
+    @IsArray()
+    @IsString({ each: true })
+    img?: string[];
 }

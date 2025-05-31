@@ -8,6 +8,8 @@ import { CurrentUserMiddleware } from 'utility/middlewares/current-user.middlewa
 import { AuthModule } from './users/auth.module';
 import { CourcesModule } from './cources/cources.module';
 import { ProfilesModule } from './users/profile/profile.module';
+import { ReviewsModule } from './cources/reviews/reviews.module';
+import { ContactModule } from './users/mail/contact/contact.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { ProfilesModule } from './users/profile/profile.module';
     }),
     AuthModule,
     CourcesModule,
-    ProfilesModule
+    ProfilesModule,
+    ReviewsModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

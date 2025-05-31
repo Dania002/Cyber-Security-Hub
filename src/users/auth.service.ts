@@ -13,6 +13,7 @@ import { UserProfileEntity } from "./entities/userProfile.entity";
 import { sign } from 'jsonwebtoken';
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { EditUserDto } from "./dto/edit-user.dto";
+import { EditProfileDto } from "./dto/edit-profile.dto";
 
 @Injectable()
 export class AuthService {
@@ -70,7 +71,6 @@ export class AuthService {
             where: { user: { id: currentUser.id } },
             relations: ["cources"],
         });
-
     }
 
     async login(userSignInDto: UserLogInDto): Promise<UserEntity> {
@@ -141,21 +141,46 @@ export class AuthService {
         return { message: "Password reset successfully." };
     }
 
-    async editUserProfile(editUserDto: EditUserDto) {
-        const user = this.userRepository.create({
-            ...editUserDto
-        });
+    async editAccount(editUserDto: EditUserDto, currentUser: UserEntity): Promise<UserEntity> {
+        const { email, phoneNumber } = editUserDto;
 
-        return  await this.userRepository.save(user);
+        if (email && email !== currentUser.email) {
+            const emailExists = await this.findUserByEmail(email);
+            if (emailExists && emailExists.id !== currentUser.id) {
+                throw new BadRequestException('Email is already in use.');
+            }
+        }
+
+        if (phoneNumber && phoneNumber !== currentUser.phoneNumber) {
+            const phoneExists = await this.findUserByPhoneNumber(phoneNumber);
+            if (phoneExists && phoneExists.id !== currentUser.id) {
+                throw new BadRequestException('Phone number is already in use.');
+            }
+        }
+
+        Object.assign(currentUser, editUserDto);
+
+        await this.userRepository.save(currentUser);
+
+        return currentUser;
     }
 
-    // async editUserProfile(editUserDto: EditUserDto, currentUser: UserEntity) {
-    //     const user = await this.userRepository.findOne({ where: { id: currentUser.id } });
-    //     if (!user) throw new NotFoundException('User not found.');
-    
-    //     Object.assign(user, editUserDto);
-    
-    //     return await this.userRepository.save(user);
-    // }
-    
+    async editProfile(editProfileDto: EditProfileDto, currentUser: UserEntity): Promise<UserProfileEntity> {
+        const existingProfile = await this.userProfileRepository.findOne({
+            where: { user: { id: currentUser.id } },
+            relations: ['user'],
+        });
+
+        if (!existingProfile) {
+            throw new NotFoundException('User profile not found.');
+        }
+
+        Object.assign(existingProfile, editProfileDto);
+
+        await this.userProfileRepository.save(existingProfile);
+
+        return existingProfile;
+    }
+
+
 }

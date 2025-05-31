@@ -13,6 +13,19 @@ import { CreateProfileDto } from "./dto/create-profile.dto";
 import { CurrentUser } from "utility/decorators/curren-user.decorator";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { EditUserDto } from "./dto/edit-user.dto";
+import { EditProfileDto } from "./dto/edit-profile.dto";
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { UseInterceptors, UploadedFile } from '@nestjs/common';
+
+const editFileName = (req, file, callback) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const fileExtName = extname(file.originalname);
+    const filename = `${file.fieldname}-${uniqueSuffix}${fileExtName}`;
+    callback(null, filename);
+};
+
 
 @Controller('auth')
 export class AuthController {
@@ -51,8 +64,52 @@ export class AuthController {
 
     @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.SPECIALIST]))
     @Post('createprofile')
-    async crateProfile(@Body() createProfileDto: CreateProfileDto, @CurrentUser() currentUser: UserEntity) {
+    @UseInterceptors(
+        FileInterceptor('cv', {
+            storage: diskStorage({
+                destination: './uploads/cvs',
+                filename: editFileName,
+            }),
+            fileFilter: (req, file, callback) => {
+                if (!file.originalname.match(/\.(pdf|doc|docx)$/)) {
+                    return callback(new BadRequestException('Only PDF, DOC, or DOCX files are allowed.'), false);
+                }
+                callback(null, true);
+            },
+            limits: {
+                fileSize: 5 * 1024 * 1024, // 5 MB
+            },
+        }),
+    )
+    async createProfile(
+        @UploadedFile() file: any,
+        @Body() createProfileDto: CreateProfileDto,
+        @CurrentUser() currentUser: UserEntity,
+    ) {
+        if (!file) {
+            throw new BadRequestException('CV file is required.');
+        }
+
+        createProfileDto.cv = file.filename;
         return await this.authService.createProfile(createProfileDto, currentUser);
+    }
+
+    @UseGuards(AuthenticationGuard)
+    @Patch('edit-account')
+    async editAccount(
+        @Body() editUserDto: EditUserDto,
+        @CurrentUser() currentUser: UserEntity,
+    ) {
+        return await this.authService.editAccount(editUserDto, currentUser);
+    }
+
+    @UseGuards(AuthenticationGuard)
+    @Patch('edit-profile')
+    async editProfile(
+        @Body() editProfileDto: EditProfileDto,
+        @CurrentUser() currentUser: UserEntity,
+    ) {
+        return await this.authService.editProfile(editProfileDto, currentUser);
     }
 
     @Post('forgetpassword')
@@ -72,11 +129,5 @@ export class AuthController {
         }
 
         return await this.authService.resetPassword(body.token, body.newPassword);
-    }
-
-    @UseGuards(AuthenticationGuard)
-    @Patch('edit-profile')
-    async editProfile(@Body() editUserDto: EditUserDto, @CurrentUser() currentUser: UserEntity) {
-        return await this.authService.editUserProfile(editUserDto);
     }
 }
