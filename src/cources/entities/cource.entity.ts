@@ -15,8 +15,9 @@ export class CourceEntity {
     @Column()
     description: string;
 
-    @Column('simple-array', { nullable: true })
-    img?: string[];
+    @Column("text", { array: true, nullable: true })
+    img: string[];
+
 
     @Column({ type: 'float', default: 0 })
     rating: number;

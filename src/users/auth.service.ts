@@ -47,8 +47,8 @@ export class AuthService {
         user = await this.userRepository.save(user);
 
         await this.mailService.sendVerificationEmail(user);
+        return { message: "Check your email to verify your account." };
 
-        return "Check your email to verify your account."
     }
 
     async createProfile(createProfileDto: CreateProfileDto, currentUser: UserEntity) {
@@ -123,7 +123,7 @@ export class AuthService {
 
         await this.mailService.sendResetPasswordEmail(user);
 
-        return { message: "Check your email for the reset password link." };
+        return { message: "Check your email for the reset password token." };
     }
 
     async resetPassword(token: string, newPassword: string) {
@@ -180,5 +180,30 @@ export class AuthService {
         await this.userProfileRepository.save(existingProfile);
 
         return existingProfile;
+    }
+
+    async getUserProfile(user: UserEntity): Promise<UserProfileEntity> {
+        const profile = await this.userProfileRepository.findOne({
+            where: { user: { id: user.id } },
+            relations: ['user', 'cources'],
+        });
+
+        if (!profile) {
+            throw new NotFoundException('Profile not found.');
+        }
+
+        return profile;
+    }
+
+    async getUserAccount(user: UserEntity) {
+        const account = await this.userRepository.findOne({
+            where: { id: user.id } ,
+        });
+
+        if (!account) {
+            throw new NotFoundException('Account not found.');
+        }
+
+        return account;
     }
 }

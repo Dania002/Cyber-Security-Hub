@@ -51,8 +51,10 @@ export class AuthController {
         user.isVerified = true;
 
         await this.userRepository.save(user);
+        {
+            "message"; "Check your email to verify your account."
+        }
 
-        return { message: 'Email successfully verified!' };
     }
 
     @Post('login')
@@ -77,7 +79,7 @@ export class AuthController {
                 callback(null, true);
             },
             limits: {
-                fileSize: 5 * 1024 * 1024, // 5 MB
+                fileSize: 5 * 1024 * 1024,
             },
         }),
     )
@@ -129,5 +131,17 @@ export class AuthController {
         }
 
         return await this.authService.resetPassword(body.token, body.newPassword);
+    }
+
+    @UseGuards(AuthenticationGuard)
+    @Get('myprofile')
+    async getMyProfile(@CurrentUser() user: UserEntity) {
+        return await this.authService.getUserProfile(user);
+    }
+
+    @UseGuards(AuthenticationGuard)
+    @Get('myaccount')
+    async getMyAccount(@CurrentUser() user: UserEntity) {
+        return await this.authService.getUserAccount(user);
     }
 }

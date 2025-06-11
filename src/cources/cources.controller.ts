@@ -66,4 +66,5 @@ export class CourcesController {
     async getCourceById(@Param('id') id: number) {
         return this.courcesService.findCource(id);
     }
+
 }

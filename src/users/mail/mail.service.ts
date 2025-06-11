@@ -18,13 +18,10 @@ export class MailService {
     }
 
     async sendResetPasswordEmail(user: UserEntity) {
-        const url = `${process.env.FRONTEND_URL}/auth/reset-password?token=${user.verificationToken}`;
-
         await this.mailerService.sendMail({
             to: user.email,
-            subject: 'Reset Your Password',
-            text: `Click the link to reset your password: ${url}`,
-            html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
+            subject: 'Reset Password Code',
+            html: `<p>This is your reset password code: <strong>${user.verificationToken}</strong> please copy it!</p>`,
         });
     }
 }
